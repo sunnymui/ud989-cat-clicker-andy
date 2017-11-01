@@ -165,10 +165,6 @@
 				// increment the clicks for the current cat
 				model.add_click(id, click_increment);
 
-				console.log(id); // 0
-				console.log(data.cats);
-				console.log(model.get(0).count);
-				console.log(model.get(id).count);
 				// update the click counter view with the current cat's click count
 				view.update.counter(model.get(id).count);
 			},
@@ -290,6 +286,8 @@
 				view.elements.cat_img.src = model.get(id).pic;
 				// reassign the img alt
 				view.elements.cat_img.alt = model.get(id).name;
+				// reassign the cat img id
+				view.elements.cat_img.dataset.id = id;
 			},
 			button: function() {
 			},
