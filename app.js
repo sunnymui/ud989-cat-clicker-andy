@@ -140,6 +140,7 @@
 			Args: na
 			Return: na
 			*/
+
 			// listen for clicks on the cat img element
 			view.elements.cat_img.addEventListener('click', function(e) {
 				// grab the data id of the clicked img
@@ -156,6 +157,8 @@
 
 				// switch the current cat to the clicked one
 				controller.click.button(current_id);
+				// make the clicked button active in the view
+				view.update.button(e.target);
 			});
 		},
 		click: {
@@ -289,7 +292,16 @@
 				// reassign the cat img id
 				view.elements.cat_img.dataset.id = id;
 			},
-			button: function() {
+			button: function(button_element) {
+				/*
+				Switches which button looks active via css styling.
+				Args: button_element (dom node obj) - the dom element to make active
+				Return: na
+				*/
+				// clear active class from any button with it
+				$(button_element).siblings().removeClass('active');
+				// add active class to currently clicked button
+				button_element.classList.add('active');
 			},
 			counter: function(value) {
 				/*

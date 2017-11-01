@@ -4,3 +4,6 @@
 .active {
   color: #fff;
   background: #555; }
+
+.cat img {
+  cursor: pointer; }
