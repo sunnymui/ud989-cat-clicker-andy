@@ -80,14 +80,14 @@
 			/*
 			Set a specific cats click count to the passed value.
 			*/
-			data.cats[id] = value;
+			data.cats[id].count = value;
 			return data.cats[id];
 		},
 		add_click: function(id, increment) {
 			/*
 			Increment a specific cat's click count by the passed increment.
 			*/
-			data.cats[id] += increment;
+			data.cats[id].count += increment;
 			return data.cats[id];
 		},
 		get_data: function() {
@@ -108,6 +108,8 @@
 			this.generate_cats(5);
 			// initiate and build the user interface
 			view.init();
+			// attach event listeners
+			this.generate_event_listeners();
 		},
 		generate_cats: function(amount) {
 			/*
@@ -131,14 +133,50 @@
 				// instantiate the Cat object w/ respective name, img src and add to cats
 				model.add_cat(new model.Cat(data.names[i], data.assets.cats[i]));
 			}
-			console.log(data);
+		},
+		generate_event_listeners: function() {
+			/*
+			Adds event listeners to all relevant interactive elements.
+			Args: na
+			Return: na
+			*/
+			// listen for clicks on the cat img element
+			view.elements.cat_img.addEventListener('click', function(e) {
+				// grab the data id of the clicked img
+				var current_id = e.target.dataset.id;
+
+				// increment the cat clicks and update counter
+				controller.click.cat(current_id);
+			});
+
+			// listen for clicks on the buttons element container
+			view.elements.buttons_container.addEventListener('click', function(e) {
+				// store reference to the current button's data id
+				var current_id = e.target.dataset.id;
+
+				// switch the current cat to the clicked one
+				controller.click.button(current_id);
+			});
 		},
 		click: {
-			switcher: function(id) {
+			cat: function(id) {
+				// amount to increment the clicks amount for current cat by
+				var click_increment = 1;
+				// increment the clicks for the current cat
+				model.add_click(id, click_increment);
 
+				console.log(id); // 0
+				console.log(data.cats);
+				console.log(model.get(0).count);
+				console.log(model.get(id).count);
+				// update the click counter view with the current cat's click count
+				view.update.counter(model.get(id).count);
 			},
-			counter: function(id) {
-
+			button: function(id) {
+				// update the view w/ the new cat
+				view.update.cat(id);
+				// update the counter w/ clicks for new cat
+				view.update.counter(model.get(id).count);
 			}
 		}
 	};
@@ -192,6 +230,8 @@
 				cat_img.src = model.get(id).pic;
 				// assign the img alt
 				cat_img.alt = model.get(id).name;
+				// assign a data id w/ this cat's id #
+				cat_img.dataset.id = id;
 
 				return cat_img;
 			},
@@ -247,9 +287,9 @@
 				Return: na
 				*/
 				// reassign the img src
-				this.elements.cat_img.src = model.get(id).pic;
+				view.elements.cat_img.src = model.get(id).pic;
 				// reassign the img alt
-				this.elements.cat_img.alt = model.get(id).name;
+				view.elements.cat_img.alt = model.get(id).name;
 			},
 			button: function() {
 			},
@@ -260,8 +300,9 @@
 				Args: value (int) - number you want the click counter element to show
 				Return: na
 				*/
+
 				// change the value of the click counter to passed in value
-				this.elements.counter.textContent = value;
+				view.elements.counter.textContent = value;
 			}
 		}
 	};
