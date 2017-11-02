@@ -40,13 +40,13 @@
 			}
 		},
 		Cat: function (name, src) {
-		/*
-		Constructs a Cat object for the cat clicker app with relevant info likely
-		the name, the pic to use, the click count.
-		Args: name (string) - name to show for the cat,
-					src (string) - the image src link for the cat's picture
-		Return: na
-		*/
+			/*
+			Constructs a Cat object for the cat clicker app with relevant info likely
+			the name, the pic to use, the click count.
+			Args: name (string) - name to show for the cat,
+						src (string) - the image src link for the cat's picture
+			Return: na
+			*/
 			// the name of this cat
 			this.name = name;
 			// the picture to use for this cat
@@ -55,11 +55,11 @@
 			this.count = 0;
 		},
 		add_cat: function(cat) {
-		/*
-		Adds a cat to the cats array.
-		Args: cat (obj) - an instance of the cat object
-		Return: na
-		*/
+			/*
+			Adds a cat to the data cats array.
+			Args: cat (obj) - an instance of the cat object
+			Return: na
+			*/
 			// push the cat object to the cats array
 			data.cats.push(cat);
 		},
@@ -67,32 +67,42 @@
 		get: function(id) {
 			/*
 			Get specific cat instance's data by its id.
+			Args: id (int) - index of the cat to get from the cats array
+			Return: the specified cat instance (obj)
 			*/
 			return data.cats[id];
 		},
 		get_all: function() {
 			/*
 			Get the entire array of cats data.
+			Args: na
+			Return: the entire array of cat instances (array)
 			*/
 			return data.cats;
 		},
 		set: function(id, value) {
 			/*
 			Set a specific cats click count to the passed value.
+			Args: id (int) - the index of the cat to set clicks for
+						value (number) - the value to set the clicks amount to
+			Return: na
 			*/
 			data.cats[id].count = value;
-			return data.cats[id];
 		},
 		add_click: function(id, increment) {
 			/*
 			Increment a specific cat's click count by the passed increment.
+			Args: id (int) - the index of the cat instance to increment
+						increment (number) - the amount to increment the click count
+			Return: na
 			*/
 			data.cats[id].count += increment;
-			return data.cats[id];
 		},
 		get_data: function() {
 			/*
-			returns the full table of raw data
+			Returns the full table of raw data
+			Args: na
+			Return: the full data table (obj)
 			*/
 			return data;
 		}
@@ -102,6 +112,12 @@
 	// gets data for the view and handles user interactions
 	var controller = {
 		init: function() {
+			/*
+			Initiates and setups basically the whole app.
+			Args: na
+			Return: na
+			*/
+
 			// initiate and populate the raw data
 			model.init();
 			// generate the starting number of cats
@@ -115,7 +131,7 @@
 			/*
 			Generates the initial instances of Cat objects for the cats data.
 			Args: amount (int) - number of cat instances to create/add to
-			Return:
+			Return: na
 			*/
 			// grab all the data
 			var data = model.get_data();
@@ -163,6 +179,11 @@
 		},
 		click: {
 			cat: function(id) {
+				/*
+				Deals with the click event on the cat by incrementing stuff.
+				Args: id (int) - index number of the cat to change in the cats array
+				Return: na
+				*/
 				// amount to increment the clicks amount for current cat by
 				var click_increment = 1;
 				// increment the clicks for the current cat
@@ -172,6 +193,11 @@
 				view.update.counter(model.get(id).count);
 			},
 			button: function(id) {
+				/*
+				Deals with clicks on the buttons by making them active.
+				Args: id (int) - index # of the cat to switch to
+				Return: na
+				*/
 				// update the view w/ the new cat
 				view.update.cat(id);
 				// update the counter w/ clicks for new cat
@@ -209,6 +235,10 @@
 			for (i=0; i < model.get_all().length; i+=1) {
 				// append button for the current cat to the dom fragment for buttons
 				buttons_pre_dom.appendChild(this.render.button(i));
+				// add the active class to the starting cat
+				if (i === 0) {
+					buttons_pre_dom.querySelector('button').classList.add('active');
+				}
 			}
 
 			// append the dom fragments to the live, visible dom tree
@@ -231,6 +261,8 @@
 				cat_img.alt = model.get(id).name;
 				// assign a data id w/ this cat's id #
 				cat_img.dataset.id = id;
+				// make it undraggable
+				cat_img.draggable = false;
 
 				return cat_img;
 			},

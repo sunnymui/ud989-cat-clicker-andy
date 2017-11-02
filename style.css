@@ -6,4 +6,5 @@
   background: #555; }
 
 .cat img {
-  cursor: pointer; }
+  cursor: pointer;
+  user-select: none; }
