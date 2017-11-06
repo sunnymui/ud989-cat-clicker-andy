@@ -2,12 +2,71 @@
   box-sizing: border-box;
 }
 
-.active {
-  color: #fff;
-  background: #555;
+body {
+  font-size: 16px;
+}
+
+// colors
+$white: #fff;
+$dark-gray: #555;
+
+// font-sizes
+
+$md-text: 1.2em;
+$md-lrg-text: 1.4em;
+
+button {
+  font-size: 1em;
+
+  &.active {
+    color: $white;
+    background: $dark-gray;
+  }
+}
+
+.counter {
+  font-size: 3em;
 }
 
 .cat img {
   cursor: pointer;
   user-select: none;
+}
+
+.admin {
+  padding: 1em;
+}
+
+.toggle {
+  margin: 1em auto;
+}
+
+.editor {
+  display: none;
+  border: 1px solid #ccc;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: $md-text;
+
+  &.active {
+    display: block;
+  }
+
+  li {
+    margin: 0.5em;
+  }
+  label {
+    margin-right: 0.5em;
+  }
+
+  input {
+    font-size: $md-text;
+  }
+}
+
+.save {
+  margin: 0.5em 1em;
+  padding: 0.2em 0.8em;
+  font-size: $md-lrg-text;
 }

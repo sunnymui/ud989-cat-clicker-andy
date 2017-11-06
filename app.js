@@ -80,14 +80,34 @@
 			*/
 			return data.cats;
 		},
-		set: function(id, value) {
-			/*
-			Set a specific cats click count to the passed value.
-			Args: id (int) - the index of the cat to set clicks for
-						value (number) - the value to set the clicks amount to
-			Return: na
-			*/
-			data.cats[id].count = value;
+		set: {
+			clicks: function(id, value) {
+				/*
+				Set a specific cats click count to the passed value.
+				Args: id (int) - the index of the cat to set clicks for
+							value (number) - the value to set the clicks amount to
+				Return: na
+				*/
+				data.cats[id].count = value;
+			},
+			name: function(id, name) {
+				/*
+				Set a specified cats name to the passed value.
+				Args: id (int) - the index of the cat to set clicks for
+							name (string) - the new name for the cat instance
+				Return: na
+				*/
+				data.cats[id].name = name;
+			},
+			img: function(id, src) {
+				/*
+				Set a specified cats img src to the passed value
+				Args: id (int) - the index of the cat to set clicks for
+							src (string) - the new img src url for the cat instance
+				Return: na
+				*/
+				data.cats[id].pic = src;
+			}
 		},
 		add_click: function(id, increment) {
 			/*
@@ -176,6 +196,31 @@
 				// make the clicked button active in the view
 				view.update.button(e.target);
 			});
+
+			// listen for clicks on the admin button to show/hide admin panel
+			view.elements.admin_btn.addEventListener('click', function() {
+				// toggle active class on admin button
+				this.classList.toggle('active');
+				// toggle visibility for the admin form
+				view.elements.admin_form.classList.toggle('active');
+			});
+
+			// listen for clicks on the admin form cancel button
+			view.elements.admin_cancel_btn.addEventListener('click', function() {
+				// reset the info in the admin form
+				// toggle the visibility of the admin form
+			});
+
+			// listen for clicks on the admin form save button
+			view.elements.admin_save_btn.addEventListener('click', function() {
+				// set the cat name to the inputted name
+
+				// set the cat img src to the inputted src
+
+				// set the cat click count to the inputted clicks
+
+			});
+
 		},
 		click: {
 			cat: function(id) {
@@ -202,6 +247,8 @@
 				view.update.cat(id);
 				// update the counter w/ clicks for new cat
 				view.update.counter(model.get(id).count);
+				// update the admin panel w/ info for the new cat
+				view.update.admin(id);
 			}
 		}
 	};
@@ -216,42 +263,61 @@
 			this.elements.cat_container = document.querySelector('.cat');
 			// get the buttons container and cache it
 			this.elements.buttons_container = document.querySelector('.catlist');
+			// get the admin container
+			this.elements.admin_container = document.querySelector('.admin');
 
+			// index id of cat to start app with
+			var start_cat = 0;
 			// doc fragment to hold all buttons before appending them to dom
 			var buttons_pre_dom = document.createDocumentFragment();
 			// doc fragment to hold cat container elements before append to dom
 			var cat_pre_dom = document.createDocumentFragment();
+			// doc fragment to hold admin elements before adding to live dom
+			var admin_pre_dom = document.createDocumentFragment();
 
-			// generate counter and cat img dom elements, cache ref in elements obj
-			this.elements.counter = this.render.counter(0);
-			this.elements.cat_img = this.render.cat(0);
+			// generate counter, cat img, admin dom elements, cache ref in elements obj
+			this.elements.counter = this.render.counter(start_cat);
+			this.elements.cat_img = this.render.cat(start_cat);
+			this.elements.admin_btn = this.render.admin_btn();
+			this.elements.admin_form = this.render.admin_form(start_cat);
+
+			// cache references to admin form elements in view.elements obj
+			this.elements.admin_name = this.elements.admin_form.querySelector('#admin-name');
+			this.elements.admin_img = this.elements.admin_form.querySelector('#admin-img');
+			this.elements.admin_clicks = this.elements.admin_form.querySelector('#admin-clicks');
+			this.elements.admin_cancel_btn = this.elements.admin_form.querySelector('.cancel');
+			this.elements.admin_save_btn = this.element.admin_form.querySelector('.save');
 
 			// append the click counter to the dom frag
 			cat_pre_dom.appendChild(this.elements.counter);
 			// append the first cat pic to the dom frag
 			cat_pre_dom.appendChild(this.elements.cat_img);
 
-			// loop through the cats array amd show the buttons for all the cats
+			// loop through the cats array amd make the buttons for all the cats
 			for (i=0; i < model.get_all().length; i+=1) {
 				// append button for the current cat to the dom fragment for buttons
 				buttons_pre_dom.appendChild(this.render.button(i));
 				// add the active class to the starting cat
-				if (i === 0) {
-					buttons_pre_dom.querySelector('button').classList.add('active');
+				if (i === start_cat) {
+					buttons_pre_dom.querySelector('button[data-id="'+start_cat+'"]').classList.add('active');
 				}
 			}
+
+			// append the admin dom elements to the admin doc fragment
+			admin_pre_dom.appendChild(this.elements.admin_btn);
+			admin_pre_dom.appendChild(this.elements.admin_form);
 
 			// append the dom fragments to the live, visible dom tree
 			this.elements.cat_container.appendChild(cat_pre_dom);
 			this.elements.buttons_container.appendChild(buttons_pre_dom);
-
+			this.elements.admin_container.appendChild(admin_pre_dom);
 		},
 		render: {
 			cat: function(id) {
 				/*
 				Builds the image element with relevant info.
 				Args: id (int) - the index of the cat from the cats array
-				Return:na
+				Return: cat img element (obj)
 				*/
 				// create img element
 				var cat_img = document.createElement('img');
@@ -270,7 +336,7 @@
 				/*
 				Creates the cat name display element.
 				Args: id(int) - index of cat from cats aray to grab name from
-				return: cat name dom element
+				return: cat name dom element (obj)
 				*/
 				// create an h3 for the cat name display
 				var cat_name = document.createElement('h3');
@@ -283,7 +349,7 @@
 				/*
 				Builds a button element labeled with the relevant name and id.
 				Args: id (int) - the index of the cat from the cats array
-				Return:na
+				Return: button dom element (obj)
 				*/
 				// create the button element
 				var button = document.createElement('button');
@@ -298,7 +364,7 @@
 				/*
 				Creates a counter element with the specified value.
 				Args: value (number) - the value to set for the counter to display
-				Return: na
+				Return: counter dom lement (obj)
 				*/
 				// create an h2 for the counter element
 				var counter = document.createElement('h2');
@@ -308,6 +374,53 @@
 				counter.textContent = value;
 
 				return counter;
+			},
+			admin_btn: function() {
+				/*
+				Generate the admin button dom element.
+				Args: na
+				Return: na
+				*/
+				// create the admin show/hide button
+				var admin_btn = document.createElement('button');
+				// add the toggle class
+				admin_btn.classList.add('toggle');
+				// text should be admin
+				admin_btn.textContent = 'Admin';
+
+				return admin_btn;
+			},
+			admin_form: function(id) {
+				/*
+				Generate the admin button and form dom elements.
+				Args: id (int) - index # of cat in cats array to get info from
+				Return: admin dom elements (obj)
+				*/
+				// grab the info for the current cat to populate the form with
+				var current_cat = model.get(id);
+				// creat the admin form ul containing element
+				var admin_form = document.createElement('ul');
+				// add editor class to the container
+				admin_form.classList.add('editor');
+				// create all the interior dom elements and inputs
+				admin_form.innerHTML ='<li>'+
+												        '<label for="admin-name">Name: </label>'+
+												        '<input type="text" id="admin-name" value="'+ current_cat.name +'">'+
+												      '</li>'+
+												      '<li>'+
+												        '<label for="admin-img">Image Source:</label>'+
+												        '<input type="text" id="admin-img" value="'+ current_cat.pic +'">'+
+												      '</li>'+
+												      '<li>'+
+												        '<label for="admin-clicks">Clicks: </label>'+
+												        '<input type="text" id="admin-clicks" value="'+ current_cat.count +'">'+
+												      '</li>'+
+															'<li>'+
+																'<button class="cancel">Cancel</button>'+
+																'<button class="save">Save</button>'+
+															'</li>';
+
+				return admin_form;
 			}
 		},
 		update: {
@@ -345,6 +458,22 @@
 
 				// change the value of the click counter to passed in value
 				view.elements.counter.textContent = value;
+			},
+			admin: function(id) {
+				/*
+				Changes the displayed data in the admin form menu.
+				Args: id (int) - index of cat info to display
+				Return:
+				*/
+				// grab the cat instance we want to show info for
+				var current_cat = model.get(id);
+
+				// change the name field to the selected cat instance name
+				view.elements.admin_name.value = current_cat.name;
+				// change the img src field to the selected cat img src
+				view.elements.admin_img.value = current_cat.pic;
+				// change the clicks field to the selected cat's count value
+				view.elements.admin_clicks.value = current_cat.count;
 			}
 		}
 	};
