@@ -35,7 +35,10 @@
 					// storage for the actual Cat instances
 					cats: [
 						// Cat objs
-					]
+					],
+					state: {
+						current_cat: 0
+					}
 				};
 			}
 		},
@@ -80,6 +83,14 @@
 			*/
 			return data.cats;
 		},
+		get_current_cat: function() {
+			/*
+			Gets the id of the current cat being displayed.
+			Args: na
+			Return: the index # (int) of the current cat
+			*/
+			return data.state.current_cat;
+		},
 		set: {
 			clicks: function(id, value) {
 				/*
@@ -107,6 +118,15 @@
 				Return: na
 				*/
 				data.cats[id].pic = src;
+			},
+			current_cat: function(id) {
+				/*
+				Sets the current cat in the data.
+				Args: id (int) - the index # of the current cat
+				Return: na
+				*/
+				// set current cat equal to the passed in id
+				data.state.current_cat = id;
 			}
 		},
 		add_click: function(id, increment) {
@@ -193,32 +213,60 @@
 
 				// switch the current cat to the clicked one
 				controller.click.button(current_id);
+				// switch current cat to clicked in the state tracker
+				model.set.current_cat(current_id);
 				// make the clicked button active in the view
 				view.update.button(e.target);
 			});
 
 			// listen for clicks on the admin button to show/hide admin panel
 			view.elements.admin_btn.addEventListener('click', function() {
+				// grab the current id from the cat elements
+				var current_id = model.get_current_cat();
 				// toggle active class on admin button
 				this.classList.toggle('active');
+				// update the admin form with the latest data
+				view.update.admin(current_id);
 				// toggle visibility for the admin form
 				view.elements.admin_form.classList.toggle('active');
 			});
 
 			// listen for clicks on the admin form cancel button
 			view.elements.admin_cancel_btn.addEventListener('click', function() {
-				// reset the info in the admin form
-				// toggle the visibility of the admin form
+				// grab the current id from the cat elements
+				var current_id = model.get_current_cat();
+				// reset the info in the admin form to the current cat's info
+				view.update.admin(current_id);
+				// toggle active class on admin button
+				view.elements.admin_btn.classList.toggle('active');
+				// toggle visibility for the admin form
+				view.elements.admin_form.classList.toggle('active');
 			});
 
 			// listen for clicks on the admin form save button
 			view.elements.admin_save_btn.addEventListener('click', function() {
+				// grab the id for the current cat
+				var current_id = model.get_current_cat();
+				// grab the name in the admin input field
+				var input_name = view.elements.admin_name.value;
+				// grab the img url in the img src field
+				var input_img = view.elements.admin_img.value;
+				// grab the clicks amount in the relevant input field
+				var input_clicks = view.elements.admin_clicks.value;
+
 				// set the cat name to the inputted name
-
+				model.set.name(current_id, input_name);
 				// set the cat img src to the inputted src
-
+				model.set.img(current_id, input_img);
 				// set the cat click count to the inputted clicks
+				model.set.clicks(current_id, parseInt(input_clicks));
 
+				// update the counter view with new click amount
+				view.update.counter(model.get(current_id).count);
+				// update the button text in the view with the new name
+				view.update.button_text(current_id, model.get(current_id).name);
+				// update the cat img src in the view w/ new src
+				view.update.cat(current_id);
 			});
 
 		},
@@ -239,7 +287,8 @@
 			},
 			button: function(id) {
 				/*
-				Deals with clicks on the buttons by making them active.
+				Deals with clicks on the buttons by making them active and updateing
+				the view.
 				Args: id (int) - index # of the cat to switch to
 				Return: na
 				*/
@@ -266,8 +315,8 @@
 			// get the admin container
 			this.elements.admin_container = document.querySelector('.admin');
 
-			// index id of cat to start app with
-			var start_cat = 0;
+			// get the current cat to start with
+			var start_cat = model.get_current_cat();
 			// doc fragment to hold all buttons before appending them to dom
 			var buttons_pre_dom = document.createDocumentFragment();
 			// doc fragment to hold cat container elements before append to dom
@@ -286,21 +335,26 @@
 			this.elements.admin_img = this.elements.admin_form.querySelector('#admin-img');
 			this.elements.admin_clicks = this.elements.admin_form.querySelector('#admin-clicks');
 			this.elements.admin_cancel_btn = this.elements.admin_form.querySelector('.cancel');
-			this.elements.admin_save_btn = this.element.admin_form.querySelector('.save');
+			this.elements.admin_save_btn = this.elements.admin_form.querySelector('.save');
 
 			// append the click counter to the dom frag
 			cat_pre_dom.appendChild(this.elements.counter);
 			// append the first cat pic to the dom frag
 			cat_pre_dom.appendChild(this.elements.cat_img);
 
+			// init var to store the button rendered in the loop
+			var current_button;
 			// loop through the cats array amd make the buttons for all the cats
 			for (i=0; i < model.get_all().length; i+=1) {
-				// append button for the current cat to the dom fragment for buttons
-				buttons_pre_dom.appendChild(this.render.button(i));
-				// add the active class to the starting cat
+				// generate the button for the current cat
+				current_button = this.render.button(i);
+				// if we're on the button for the current cat
 				if (i === start_cat) {
-					buttons_pre_dom.querySelector('button[data-id="'+start_cat+'"]').classList.add('active');
+					// add the active class to that cat's button
+					current_button.classList.add('active');
 				}
+				// append button for the current cat to the dom fragment for buttons
+				buttons_pre_dom.appendChild(current_button);
 			}
 
 			// append the admin dom elements to the admin doc fragment
@@ -448,6 +502,18 @@
 				// add active class to currently clicked button
 				button_element.classList.add('active');
 			},
+			button_text: function(id, text) {
+				/*
+				Changes the text of a specified cat's button.
+				Args: id (int) - the id of the cat you want to change the button for,
+							text (string) - the text to change the button text to
+				Return: na
+				*/
+				// grab the button with the relevant id #
+				var current_button = document.querySelector('.catlist button[data-id="'+id+'"]');
+				// change the button's text to the passed in text
+				current_button.textContent = text;
+			},
 			counter: function(value) {
 				/*
 				Changes the displayed value of the click counter to whatever
@@ -463,7 +529,7 @@
 				/*
 				Changes the displayed data in the admin form menu.
 				Args: id (int) - index of cat info to display
-				Return:
+				Return: na
 				*/
 				// grab the cat instance we want to show info for
 				var current_cat = model.get(id);
